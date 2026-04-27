@@ -1,0 +1,1042 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Blood Bank System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding-top: 70px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            padding: 15px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-left: 4px solid white;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .top-navbar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            color: #2563eb;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .stat-card h6 {
+            color: #666;
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .content-header {
+            background: linear-gradient(45deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .table-responsive {
+            padding: 20px;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(45deg, #2563eb, #1d4ed8);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary-custom:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .hidden-section {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar .nav-link span {
+                display: none;
+            }
+
+            .sidebar .nav-link i {
+                margin-right: 0;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .top-navbar {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar" id="sidebar">
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="/admin-dashboard/">
+                <i class="fas fa-home"></i>
+                <span>Admin Home</span>
+            </a>
+            <a class="nav-link" href="/dashboard/">
+                <i class="fas fa-arrow-left"></i>
+                <span>User Dashboard</span>
+            </a>
+            <a class="nav-link" href="#profile" data-section="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a class="nav-link" href="#manage-users" data-section="manage-users">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a class="nav-link" href="#manage-inventory" data-section="manage-inventory">
+                <i class="fas fa-boxes"></i>
+                <span>Inventory</span>
+            </a>
+            <a class="nav-link" href="#pending-requests" data-section="pending-requests">
+                <i class="fas fa-check-circle"></i>
+                <span>Pending Requests</span>
+            </a>
+            <a class="nav-link" href="#analytics-progress" data-section="analytics-progress">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a class="nav-link" href="/inventory/report/">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a class="nav-link" href="#settings" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <hr class="mx-3 my-3" style="border-color: rgba(255,255,255,0.2);">
+            <a class="nav-link" href="#logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="top-navbar">
+            <h2>Admin Dashboard</h2>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <div style="font-weight: bold;" id="userName">Admin</div>
+                    <div class="role-badge" id="userRole">ADMIN</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-cards" id="statsContainer"></div>
+
+        <div class="content-section hidden-section" id="profile-section">
+            <div class="content-header">Profile</div>
+            <div class="table-responsive">
+                <div id="profileContent"></div>
+            </div>
+        </div>
+
+        <div class="content-section hidden-section" id="manage-users-section">
+            <div class="content-header">Manage Users</div>
+            <div class="table-responsive p-4">
+                <div class="mb-4">
+                    <h5>Create New Employee / Admin</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input id="newUserUsername" class="form-control" placeholder="Username" />
+                        </div>
+                        <div class="col-md-4">
+                            <input id="newUserEmail" class="form-control" placeholder="Email" />
+                        </div>
+                        <div class="col-md-4">
+                            <input id="newUserPassword" class="form-control" placeholder="Password" type="password" />
+                        </div>
+                        <div class="col-md-4">
+                            <input id="newUserFirstName" class="form-control" placeholder="First name" />
+                        </div>
+                        <div class="col-md-4">
+                            <input id="newUserLastName" class="form-control" placeholder="Last name" />
+                        </div>
+                        <div class="col-md-4">
+                            <select id="newUserRole" class="form-select">
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="donor">Donor</option>
+                                <option value="recipient">Recipient</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button class="btn btn-success" onclick="createUser()">Create User</button>
+                        </div>
+                    </div>
+                    <div id="createUserMessage" class="mt-3"></div>
+                </div>
+                <table class="table" id="usersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Blood Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-section hidden-section" id="manage-inventory-section">
+            <div class="content-header">Manage Inventory</div>
+            <div class="table-responsive p-4">
+                <div class="mb-4">
+                    <h5>Add Inventory Item</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <select id="newInventoryBloodType" class="form-select">
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="newInventoryLocation" class="form-select">
+                                <option value="">Select location</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input id="newInventoryUnits" class="form-control" placeholder="Units" type="number" min="0" />
+                        </div>
+                        <div class="col-md-2">
+                            <input id="newInventoryExpiry" class="form-control" placeholder="Expiry date" type="date" />
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button class="btn btn-success" onclick="createInventoryItem()">Add Inventory</button>
+                        </div>
+                    </div>
+                    <div id="createInventoryMessage" class="mt-3"></div>
+                </div>
+                <table class="table" id="inventoryTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Blood Type</th>
+                            <th>Location</th>
+                            <th>Units</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-section hidden-section" id="pending-requests-section">
+            <div class="content-header">Pending Blood Requests</div>
+            <div class="table-responsive">
+                <table class="table" id="pendingTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Requester</th>
+                            <th>Blood Type</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-section hidden-section" id="analytics-progress-section">
+            <div class="content-header">Analytics Progress</div>
+            <div class="table-responsive p-4" id="analyticsContent">
+                <div class="row" id="analyticsGrid"></div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="stat-card p-4">
+                            <h6>Request Status Breakdown</h6>
+                            <canvas id="analyticsChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section hidden-section" id="reports-section">
+            <div class="content-header">Reports</div>
+            <div class="table-responsive p-4">
+                <p>View the live inventory intelligence dashboard and report exports.</p>
+                <a href="/inventory/report/" class="btn btn-primary">Open Inventory Report</a>
+
+        <div class="content-section hidden-section" id="settings-section">
+            <div class="content-header">Admin Settings</div>
+            <div class="table-responsive p-4">
+                <p>System settings and controls will be shown here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const token = localStorage.getItem('authToken');
+        let userData = localStorage.getItem('userData');
+        userData = userData ? JSON.parse(userData) : null;
+
+        if (!token) {
+            window.location.href = '/login/';
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initDashboard();
+        });
+
+        async function initDashboard() {
+            if (!userData || !userData.role) {
+                userData = await fetchCurrentUser();
+            }
+
+            if (!userData || !userData.id) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = '/login/';
+                return;
+            }
+
+            localStorage.setItem('userData', JSON.stringify(userData));
+            loadUserInfo();
+            setupNavigation();
+            setupRoleBasedUI();
+            loadDashboardData();
+        }
+
+        function fetchCurrentUser() {
+            return fetch('/api/auth/user/', {
+                headers: {'Authorization': 'Token ' + token}
+            })
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null);
+        }
+
+        function normalizeRole(role) {
+            return (role || '').toString().trim().toLowerCase().replace(/^role_/, '').replace(/[-\s]/g, '_');
+        }
+
+        function loadUserInfo() {
+            const roleLabel = userData && userData.role ? normalizeRole(userData.role).replace('_', ' ').toUpperCase() : 'ADMIN';
+            document.getElementById('userName').textContent = (userData && (userData.first_name || userData.username)) || 'Admin';
+            document.getElementById('userRole').textContent = roleLabel;
+            document.getElementById('userAvatar').textContent = ((userData && (userData.first_name || userData.username)) || 'A')[0].toUpperCase();
+        }
+
+        function setupNavigation() {
+            document.querySelectorAll('[data-section]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+            const sectionEl = document.getElementById(section + '-section');
+            if (sectionEl) {
+                sectionEl.style.display = 'block';
+            }
+        }
+
+        function setupRoleBasedUI() {
+            const role = normalizeRole(userData && userData.role);
+            if (!['admin', 'super_admin'].includes(role)) {
+                window.location.href = '/dashboard/';
+                return;
+            }
+
+            document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            showSection('profile');
+            document.querySelector('[data-section="profile"]').classList.add('active');
+            loadStatsCards(role);
+        }
+
+        function loadStatsCards(role) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <i class="fas fa-users fa-2x text-info mb-3"></i>
+                    <h3>Loading</h3>
+                    <h6>Total Users</h6>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tint fa-2x text-warning mb-3"></i>
+                    <h3>Loading</h3>
+                    <h6>Inventory Units</h6>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock fa-2x text-danger mb-3"></i>
+                    <h3>Loading</h3>
+                    <h6>Pending Requests</h6>
+                </div>
+            `;
+        }
+
+        function loadDashboardData() {
+            loadProfile();
+            loadUsers();
+            loadLocations().then(loadInventory);
+            loadPendingRequests();
+            loadAnalytics();
+        }
+
+        function loadProfile() {
+            document.getElementById('profileContent').innerHTML = `
+                <div class="row gx-3 gy-4">
+                    <div class="col-md-6">
+                        <strong>Username:</strong> ${userData.username || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Email:</strong> ${userData.email || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Full Name:</strong> ${userData.first_name || ''} ${userData.last_name || ''}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Role:</strong> ${userData.role || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Blood Type:</strong> ${userData.blood_type || 'Not set'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Phone:</strong> ${userData.phone || 'N/A'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadUsers() {
+            fetch('/api/users/', {headers: {'Authorization': 'Token ' + token}})
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = '';
+                data.forEach(user => {
+                    const isCurrentUser = user.id === userData.id;
+                    const canDelete = userData.role === 'super_admin' && !isCurrentUser;
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <select class="form-select form-select-sm" id="role-select-${user.id}">
+                                    <option value="donor" ${user.role === 'donor' ? 'selected' : ''}>Donor</option>
+                                    <option value="recipient" ${user.role === 'recipient' ? 'selected' : ''}>Recipient</option>
+                                    <option value="both" ${user.role === 'both' ? 'selected' : ''}>Both</option>
+                                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="super_admin" ${user.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+                                </select>
+                            </td>
+                            <td>${user.blood_type || 'N/A'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-2" onclick="saveUserRole(${user.id})">Save</button>
+                                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>` : ''}
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        function createUser() {
+            const username = document.getElementById('newUserUsername').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+            const password = document.getElementById('newUserPassword').value;
+            const firstName = document.getElementById('newUserFirstName').value.trim();
+            const lastName = document.getElementById('newUserLastName').value.trim();
+            const role = document.getElementById('newUserRole').value;
+            const msg = document.getElementById('createUserMessage');
+
+            if (!username || !email || !password) {
+                msg.innerHTML = '<div class="alert alert-danger">Username, email, and password are required.</div>';
+                return;
+            }
+
+            fetch('/api/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + token
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password,
+                    first_name: firstName,
+                    last_name: lastName,
+                    role
+                })
+            })
+            .then(res => res.json().then(data => ({status: res.status, body: data})))
+            .then(({status, body}) => {
+                if (status >= 200 && status < 300) {
+                    msg.innerHTML = '<div class="alert alert-success">User created successfully.</div>';
+                    document.getElementById('newUserUsername').value = '';
+                    document.getElementById('newUserEmail').value = '';
+                    document.getElementById('newUserPassword').value = '';
+                    document.getElementById('newUserFirstName').value = '';
+                    document.getElementById('newUserLastName').value = '';
+                    loadUsers();
+                } else {
+                    const message = body.error || Object.values(body).flat().join(', ');
+                    msg.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+                }
+            })
+            .catch(() => {
+                msg.innerHTML = '<div class="alert alert-danger">Unable to create user right now.</div>';
+            });
+        }
+
+        function saveUserRole(userId) {
+            const select = document.getElementById(`role-select-${userId}`);
+            const role = select.value;
+            fetch(`/api/users/${userId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + token
+                },
+                body: JSON.stringify({role})
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Unable to update role');
+                return res.json();
+            })
+            .then(() => {
+                alert('User role updated successfully');
+                loadUsers();
+            })
+            .catch(err => alert(err.message));
+        }
+
+        function deleteUser(userId) {
+            if (!confirm('Delete this user? This action cannot be undone.')) return;
+            fetch(`/api/users/${userId}/`, {
+                method: 'DELETE',
+                headers: {'Authorization': 'Token ' + token}
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Unable to delete user');
+                loadUsers();
+            })
+            .catch(err => alert(err.message));
+        }
+
+        function loadInventory() {
+            fetch('/api/inventory/', {headers: {'Authorization': 'Token ' + token}})
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#inventoryTable tbody');
+                tbody.innerHTML = '';
+                if (!data.length) {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr><td colspan="4" class="text-center text-muted">No inventory records found. Add a new item above.</td></tr>
+                    `);
+                    return;
+                }
+                data.forEach(item => {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${item.blood_type}</td>
+                            <td>${item.location_name || item.location || 'Default'}</td>
+                            <td><input id="inventory-units-${item.id}" type="number" min="0" value="${item.units_available}" class="form-control form-control-sm" style="width:100px;"/></td>
+                            <td><button class="btn btn-sm btn-primary" onclick="updateInventory(${item.id})">Update</button></td>
+                        </tr>
+                    `);
+                });
+            })
+            .catch(() => {
+                const tbody = document.querySelector('#inventoryTable tbody');
+                tbody.innerHTML = `<tr><td colspan="4" class="text-danger">Unable to load inventory records.</td></tr>`;
+            });
+        }
+
+        function updateInventory(itemId) {
+            const input = document.getElementById(`inventory-units-${itemId}`);
+            const unitsAvailable = parseInt(input.value, 10);
+            fetch(`/api/inventory/${itemId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + token
+                },
+                body: JSON.stringify({units_available: unitsAvailable})
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Unable to update inventory');
+                return res.json();
+            })
+            .then(() => {
+                alert('Inventory updated successfully');
+                loadInventory();
+            })
+            .catch(err => alert(err.message));
+        }
+
+        function loadLocations() {
+            return fetch('/api/locations/', {headers: {'Authorization': 'Token ' + token}})
+            .then(res => res.json())
+            .then(data => {
+                const locationSelect = document.getElementById('newInventoryLocation');
+                locationSelect.innerHTML = '<option value="">Select location</option>';
+                data.forEach(location => {
+                    locationSelect.insertAdjacentHTML('beforeend', `
+                        <option value="${location.id}">${location.name} - ${location.city}</option>
+                    `);
+                });
+            })
+            .catch(() => {
+                const locationSelect = document.getElementById('newInventoryLocation');
+                locationSelect.innerHTML = '<option value="">Unable to load locations</option>';
+            });
+        }
+
+        function createInventoryItem() {
+            const bloodType = document.getElementById('newInventoryBloodType').value;
+            const locationId = document.getElementById('newInventoryLocation').value;
+            const units = parseInt(document.getElementById('newInventoryUnits').value, 10);
+            const expiryDate = document.getElementById('newInventoryExpiry').value;
+            const msg = document.getElementById('createInventoryMessage');
+
+            if (!locationId || Number.isNaN(units) || units < 0 || !expiryDate) {
+                msg.innerHTML = '<div class="alert alert-danger">Location, units and expiry date are required.</div>';
+                return;
+            }
+
+            fetch('/api/inventory/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + token
+                },
+                body: JSON.stringify({
+                    blood_type: bloodType,
+                    location: locationId,
+                    units_available: units,
+                    expiry_date: expiryDate
+                })
+            })
+            .then(res => res.json().then(data => ({status: res.status, body: data})))
+            .then(({status, body}) => {
+                if (status >= 200 && status < 300) {
+                    msg.innerHTML = '<div class="alert alert-success">Inventory item added successfully.</div>';
+                    document.getElementById('newInventoryUnits').value = '';
+                    document.getElementById('newInventoryExpiry').value = '';
+                    loadInventory();
+                } else {
+                    msg.innerHTML = `<div class="alert alert-danger">${body.detail || Object.values(body).flat().join(', ')}</div>`;
+                }
+            })
+            .catch(() => {
+                msg.innerHTML = '<div class="alert alert-danger">Unable to add inventory item right now.</div>';
+            });
+        }
+
+        function loadPendingRequests() {
+            fetch('/api/requests/', {headers: {'Authorization': 'Token ' + token}})
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#pendingTable tbody');
+                tbody.innerHTML = '';
+                data.filter(request => request.status === 'pending').forEach(request => {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${request.requester || 'N/A'}</td>
+                            <td>${request.blood_type}</td>
+                            <td>${request.request_type}</td>
+                            <td>${new Date(request.created_at || request.date_requested || Date.now()).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success me-2" onclick="approveRequest(${request.id})">Approve</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejectRequest(${request.id})">Reject</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        function approveRequest(requestId) {
+            fetch(`/api/requests/${requestId}/approve/`, {
+                method: 'POST',
+                headers: {'Authorization': 'Token ' + token}
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Unable to approve request');
+                return res.json();
+            })
+            .then(() => {
+                alert('Request approved');
+                loadPendingRequests();
+            })
+            .catch(err => alert(err.message));
+        }
+
+        function rejectRequest(requestId) {
+            fetch(`/api/requests/${requestId}/reject/`, {
+                method: 'POST',
+                headers: {'Authorization': 'Token ' + token}
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Unable to reject request');
+                return res.json();
+            })
+            .then(() => {
+                alert('Request rejected');
+                loadPendingRequests();
+            })
+            .catch(err => alert(err.message));
+        }
+
+        function loadAnalytics() {
+            Promise.all([
+                fetch('/api/users/', {headers: {'Authorization': 'Token ' + token}}).then(r => r.json()),
+                fetch('/api/inventory/', {headers: {'Authorization': 'Token ' + token}}).then(r => r.json()),
+                fetch('/api/requests/', {headers: {'Authorization': 'Token ' + token}}).then(r => r.json()),
+                fetch('/api/donations/', {headers: {'Authorization': 'Token ' + token}}).then(r => r.json())
+            ])
+            .then(([users, inventory, requests, donations]) => {
+                const totalUsers = users.length;
+                const totalDonors = users.filter(u => ['donor', 'both'].includes(u.role)).length;
+                const totalRecipients = users.filter(u => ['recipient', 'both'].includes(u.role)).length;
+                const totalAdmins = users.filter(u => ['admin', 'super_admin'].includes(u.role)).length;
+                const totalInventoryUnits = inventory.reduce((sum, item) => sum + (item.units_available || 0), 0);
+                const totalRequests = requests.length;
+                const totalPending = requests.filter(r => r.status === 'pending').length;
+                const totalApproved = requests.filter(r => r.status === 'approved').length;
+                const totalRejected = requests.filter(r => r.status === 'rejected').length;
+                const totalDonations = donations.length;
+                const lowStock = inventory.filter(item => item.units_available < 30).length;
+
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card">
+                        <i class="fas fa-users fa-2x text-info mb-3"></i>
+                        <h3>${totalUsers}</h3>
+                        <h6>Total Users</h6>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tint fa-2x text-warning mb-3"></i>
+                        <h3>${totalInventoryUnits}</h3>
+                        <h6>Total Units</h6>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-clock fa-2x text-danger mb-3"></i>
+                        <h3>${totalPending}</h3>
+                        <h6>Pending Requests</h6>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                        <h3>${totalApproved}</h3>
+                        <h6>Approved Requests</h6>
+                    </div>
+                `;
+
+                const analyticsGrid = document.getElementById('analyticsGrid');
+                const progressItems = [
+                    {label: 'Pending Requests', value: totalPending, total: totalRequests, color: 'warning'},
+                    {label: 'Approved Requests', value: totalApproved, total: totalRequests, color: 'success'},
+                    {label: 'Rejected Requests', value: totalRejected, total: totalRequests, color: 'danger'},
+                    {label: 'Low Stock Items', value: lowStock, total: inventory.length, color: 'danger'}
+                ];
+
+                analyticsGrid.innerHTML = `
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <h6>Total Donors</h6>
+                            <h3>${totalDonors}</h3>
+                            <p>Donor/both users</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <h6>Total Recipients</h6>
+                            <h3>${totalRecipients}</h3>
+                            <p>Recipient/both users</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <h6>Total Requests</h6>
+                            <h3>${totalRequests}</h3>
+                            <p>All blood requests</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <h6>Total Donations</h6>
+                            <h3>${totalDonations}</h3>
+                            <p>Donation entries</p>
+                        </div>
+                    </div>
+                `;
+
+                const progressHtml = progressItems.map(item => {
+                    const percent = item.total ? Math.round((item.value / item.total) * 100) : 0;
+                    return `
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong>${item.label}</strong>
+                                <span>${item.value}/${item.total}</span>
+                            </div>
+                            <div class="progress" style="height: 12px; border-radius: 10px; overflow: hidden;">
+                                <div class="progress-bar bg-${item.color}" role="progressbar" style="width: ${percent}%"></div>
+                            </div>
+                            <small class="text-muted">${percent}% progress</small>
+                        </div>
+                    `;
+                }).join('');
+
+                analyticsGrid.insertAdjacentHTML('beforeend', `
+                    <div class="col-12 mt-3">
+                        <div class="stat-card">
+                            <h6>Request Status Progress</h6>
+                            ${progressHtml}
+                        </div>
+                    </div>
+                `);
+
+                if (window.Chart) {
+                    const chartCanvas = document.getElementById('analyticsChart');
+                    if (chartCanvas) {
+                        if (window.analyticsChartInstance) {
+                            window.analyticsChartInstance.destroy();
+                        }
+                        window.analyticsChartInstance = new Chart(chartCanvas, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Pending', 'Approved', 'Rejected'],
+                                datasets: [{
+                                    label: 'Requests',
+                                    data: [totalPending, totalApproved, totalRejected],
+                                    backgroundColor: ['#f59e0b', '#22c55e', '#ef4444'],
+                                    borderColor: ['#b45309', '#15803d', '#b91c1c'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {position: 'bottom'},
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const percentage = totalRequests ? Math.round((value / totalRequests) * 100) : 0;
+                                                return `${label}: ${value} (${percentage}%)`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(() => {
+                document.getElementById('analyticsContent').innerHTML = '<p class="text-danger">Unable to load analytics right now.</p>';
+            });
+        }
+
+        function logout() {
+            fetch('/api/auth/logout/', {
+                method: 'POST',
+                headers: {'Authorization': 'Token ' + token}
+            }).then(() => {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = '/login/';
+            });
+        }
+
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

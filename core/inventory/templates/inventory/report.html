@@ -1,0 +1,204 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Report - Blood Bank</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #f3f6fb; }
+        .report-card { border-radius: 18px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); background: white; }
+        .report-header { padding: 24px; border-bottom: 1px solid #e8edf4; }
+        .report-content { padding: 24px; }
+        .chart-card { border-radius: 18px; padding: 24px; background: white; box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+        .nav-link { color: #374151; }
+        .nav-link:hover { color: #2563eb; }
+        @media print {
+            body { background: white; }
+            .btn, .sidebar-toggle, .report-header a, .report-header button { display: none !important; }
+            .report-card, .chart-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3">Inventory Report</h1>
+                <p class="text-muted">Live reporting for blood stock, requests and donations.</p>
+            </div>
+            <div>
+                <button class="btn btn-success me-2" onclick="window.print()"><i class="fas fa-file-pdf"></i> Save as PDF</button>
+                <button class="btn btn-info me-2" onclick="downloadReportCSV()"><i class="fas fa-file-csv"></i> Download CSV</button>
+                <a href="/admin-dashboard/" class="btn btn-outline-primary me-2"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+                <a href="/dashboard/" class="btn btn-secondary"><i class="fas fa-tachometer-alt"></i> User Dashboard</a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4" id="statsCards"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <h5 class="mb-4">Blood Units by Type</h5>
+                    <canvas id="bloodTypeChart" height="260"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <h5 class="mb-4">Request Status Overview</h5>
+                    <canvas id="requestStatusChart" height="260"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6">
+                <div class="report-card">
+                    <div class="report-header">
+                        <h5>Low Stock Locations</h5>
+                    </div>
+                    <div class="report-content" id="lowStockList"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="report-card">
+                    <div class="report-header">
+                        <h5>Top Donation Activity</h5>
+                    </div>
+                    <div class="report-content" id="donationSummary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let reportData = null;
+
+        async function loadReport() {
+            const res = await fetch('/inventory/api/report/');
+            const data = await res.json();
+            reportData = data;
+
+            const statsCards = document.getElementById('statsCards');
+            statsCards.innerHTML = `
+                <div class="col-md-3">
+                    <div class="report-card p-4 text-center">
+                        <small class="text-muted">Total Units</small>
+                        <h3 class="mt-2">${data.total_units}</h3>
+                        <div class="text-success">${data.total_locations} locations</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="report-card p-4 text-center">
+                        <small class="text-muted">Low Stock</small>
+                        <h3 class="mt-2">${data.low_stock_count}</h3>
+                        <div class="text-warning">Below ${data.low_stock_threshold} units</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="report-card p-4 text-center">
+                        <small class="text-muted">Total Requests</small>
+                        <h3 class="mt-2">${data.total_requests}</h3>
+                        <div class="text-info">${data.pending_requests} pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="report-card p-4 text-center">
+                        <small class="text-muted">Total Donations</small>
+                        <h3 class="mt-2">${data.total_donations}</h3>
+                        <div class="text-primary">${data.donations_last_month} last month</div>
+                    </div>
+                </div>
+            `;
+
+            const bloodTypeChart = new Chart(document.getElementById('bloodTypeChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.units_by_type),
+                    datasets: [{
+                        label: 'Units',
+                        data: Object.values(data.units_by_type),
+                        backgroundColor: '#2563eb'
+                    }]
+                },
+                options: {responsive: true, scales: {y: {beginAtZero: true}}}
+            });
+
+            const requestStatusChart = new Chart(document.getElementById('requestStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+                    datasets: [{
+                        data: [data.pending_requests, data.approved_requests, data.rejected_requests, data.completed_requests],
+                        backgroundColor: ['#f59e0b', '#22c55e', '#ef4444', '#3b82f6']
+                    }]
+                },
+                options: {responsive: true}
+            });
+
+            const lowStockList = document.getElementById('lowStockList');
+            lowStockList.innerHTML = data.low_stock_locations.map(item => `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <strong>${item.location}</strong><br>
+                        <small class="text-muted">${item.blood_type}</small>
+                    </div>
+                    <span class="badge bg-danger">${item.units} units</span>
+                </div>
+            `).join('') || '<p class="text-muted">No low stock items.</p>';
+
+            const donationSummary = document.getElementById('donationSummary');
+            donationSummary.innerHTML = `
+                <p><strong>Last 30 days:</strong> ${data.donations_last_month}</p>
+                <p><strong>Total donors active:</strong> ${data.active_donors}</p>
+                <p><strong>Scheduled donations:</strong> ${data.scheduled_donations}</p>
+            `;
+        }
+
+        function downloadReportCSV() {
+            if (!reportData) {
+                alert('Report data not loaded yet.');
+                return;
+            }
+
+            const rows = [];
+            rows.push(['Metric', 'Value']);
+            rows.push(['Total Units', reportData.total_units]);
+            rows.push(['Locations', reportData.total_locations]);
+            rows.push(['Low Stock Count', reportData.low_stock_count]);
+            rows.push(['Low Stock Threshold', reportData.low_stock_threshold]);
+            rows.push(['Total Requests', reportData.total_requests]);
+            rows.push(['Pending Requests', reportData.pending_requests]);
+            rows.push(['Approved Requests', reportData.approved_requests]);
+            rows.push(['Rejected Requests', reportData.rejected_requests]);
+            rows.push(['Completed Requests', reportData.completed_requests]);
+            rows.push(['Total Donations', reportData.total_donations]);
+            rows.push(['Donations Last 30 Days', reportData.donations_last_month]);
+            rows.push(['Scheduled Donations', reportData.scheduled_donations]);
+            rows.push(['Active Donors', reportData.active_donors]);
+            rows.push([]);
+            rows.push(['Blood Type', 'Units']);
+            Object.entries(reportData.units_by_type).forEach(([type, units]) => rows.push([type, units]));
+            rows.push([]);
+            rows.push(['Low Stock Location', 'Blood Type', 'Units']);
+            reportData.low_stock_locations.forEach(item => rows.push([item.location, item.blood_type, item.units]));
+
+            const csvContent = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inventory-report-${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        loadReport();
+    </script>
+</body>
+</html>

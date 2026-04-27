@@ -1,0 +1,57 @@
+:root {
+    --danger-red: hsl(350, 70%, 54%);
+    --light-bg: #f8f9fa;
+}
+
+body {
+    background-color: var(--light-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-danger {
+    background-color: var(--danger-red);
+    border-color: var(--danger-red);
+}
+
+.btn-danger:hover {
+    background-color: oklab(45.549% -0.02172 -0.30621);
+}
+
+.bg-danger {
+    background-color: var(--danger-red) !important;
+}
+
+.alert-emergency {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.badge-emergency {
+    background-color: #ff6b6b;
+}
+
+table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+.form-control:focus {
+    border-color: var(--danger-red);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}

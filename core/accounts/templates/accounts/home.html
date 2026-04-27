@@ -1,0 +1,349 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank System - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .marquee {
+            background: linear-gradient(45deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 15px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 20px 0;
+        }
+        .marquee span {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 60px 0;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .animated-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+            padding: 0 20px;
+        }
+
+        .animated-item {
+            background: white;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animated-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .animated-item.static {
+            animation: none;
+        }
+
+        .animated-item.animated {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .animated-item.animated:nth-child(1) { animation-delay: 0s; }
+        .animated-item.animated:nth-child(2) { animation-delay: 0.5s; }
+        .animated-item.animated:nth-child(3) { animation-delay: 1s; }
+        .animated-item.animated:nth-child(4) { animation-delay: 1.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .image-container {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .doctor-image, .nurse-image, .patient-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .animated-item:hover .doctor-image,
+        .animated-item:hover .nurse-image,
+        .animated-item:hover .patient-image {
+            transform: scale(1.05);
+        }
+
+        .blood-icon {
+            font-size: 5rem;
+            color: #2563eb;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .animated-item.blood-pile .blood-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .animated-item.blood-pile:hover .blood-icon {
+            transform: scale(1.2);
+            color: #1d4ed8;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .animated-item p {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .blood-pile::after {
+            content: "🩸🩸🩸";
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            animation: drip 2s ease-in-out infinite;
+        }
+
+        @keyframes drip {
+            0%, 100% { opacity: 0.3; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(5px); }
+        }
+
+        .registration-cards {
+            margin-top: 60px;
+        }
+
+        .registration-cards .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .registration-cards .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .features-section {
+            background: #f8f9fa;
+            padding: 60px 0;
+            margin-top: 60px;
+            border-radius: 15px;
+        }
+
+        .feature-item {
+            padding: 30px 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-item h4 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .animated-images {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 10px;
+            }
+
+            .image-container {
+                height: 150px;
+            }
+
+            .animated-item {
+                padding: 20px 15px;
+            }
+
+            .blood-icon {
+                font-size: 4rem;
+            }
+
+            .hero-section {
+                padding: 40px 20px;
+            }
+
+            .display-4 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .marquee span {
+                font-size: 14px;
+            }
+
+            .animated-item p {
+                font-size: 1rem;
+            }
+
+            .feature-item h4 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"> Blood Bank System</a>
+            <div class="d-flex">
+                <a href="/login/" class="btn btn-outline-light me-2">Login</a>
+                <a href="/register/" class="btn btn-light">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="hero-section">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="display-4 text-primary mb-4">Welcome to Blood Bank System</h1>
+                    <p class="lead mb-4">
+                        Connecting donors with those in need. Save lives by donating blood or requesting when you need it.
+                    </p>
+
+                    <!-- Marquee Section -->
+                    <div class="marquee">
+                        <span>🩸 Welcome to Our Blood Bank System - Save Lives Today! 🩸 Every Drop Counts 🩸 Join Our Community of Life Savers 🩸 Your Donation Can Save Up to 3 Lives 🩸</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animated Images Section -->
+        <div class="animated-images">
+            <div class="animated-item static">
+                <div class="image-container">
+                    <img src="{% static 'images/imagesdr1.png' %}" alt="Expert Doctors" class="doctor-image">
+                </div>
+                <p>Expert Doctors</p>
+            </div>
+
+            <div class="animated-item animated">
+                <div class="image-container">
+                    <img src="{% static 'images/nurses4.png' %}" alt="Caring Nurses" class="nurse-image">
+                </div>
+                <p>Caring Nurses</p>
+            </div>
+
+            <div class="animated-item animated">
+                <div class="image-container">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(45deg, #2563eb, #1d4ed8); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                </div>
+                <p>Donating Patients</p>
+            </div>
+
+            <div class="animated-item blood-pile animated">
+                <div class="image-container">
+                    <i class="fas fa-tint blood-icon"></i>
+                </div>
+                <p>Blood Supply</p>
+            </div>
+        </div>
+
+        <div class="registration-cards">
+            <div class="row mt-5">
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Need Blood?</h5>
+                            <p class="card-text">
+                                Register as a recipient and submit blood requests. Our system will help you find available donors.
+                            </p>
+                            <a href="/register/" class="btn btn-primary">Register as Recipient</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Want to Donate?</h5>
+                            <p class="card-text">
+                                Join our community of life-savers. Register as a donor and help save lives in your community.
+                            </p>
+                            <a href="/register/" class="btn btn-primary">Register as Donor</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-section">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h3 class="text-primary">Why Choose Our Blood Bank?</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-item text-center">
+                        <h4>🏥</h4>
+                        <h6>Trusted Network</h6>
+                        <p>Connected with verified hospitals and blood banks</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-item text-center">
+                        <h4>⚡</h4>
+                        <h6>Quick Response</h6>
+                        <p>Emergency requests handled within hours</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-item text-center">
+                        <h4>🛡️</h4>
+                        <h6>Safe & Secure</h6>
+                        <p>All donations and requests are verified and tracked</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

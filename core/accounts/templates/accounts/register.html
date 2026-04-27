@@ -1,0 +1,464 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Blood Bank System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, #FF6B9D 0%, #FF9E1B 100%);
+        }
+
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            padding: 50px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .register-header h2 {
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .register-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+            outline: none;
+        }
+
+        .row-cols-2 {
+            gap: 20px;
+        }
+
+        .btn-register {
+            background: linear-gradient(45deg, #2563eb, #1d4ed8);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .btn-register:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            color: #999;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            height: 1px;
+            width: 100%;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            position: relative;
+            background: white;
+            padding: 0 10px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .login-link p {
+            color: #666;
+            margin: 0;
+        }
+
+        .login-link a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #1d4ed8;
+        }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .spinner {
+            display: none;
+        }
+
+        .role-info {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .blood-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .blood-option {
+            display: none;
+        }
+
+        .blood-option + label {
+            display: inline-block;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .blood-option:checked + label {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        @media (max-width: 576px) {
+            .register-card {
+                padding: 30px 20px;
+            }
+
+            .register-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .row-cols-2 {
+                gap: 15px;
+            }
+
+            .blood-types {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <h2><i class="fas fa-tint"></i> Join Blood Bank</h2>
+                <p>Help save lives by donating blood</p>
+            </div>
+
+            <div id="message" class="alert" style="display: none;"></div>
+
+            <form id="registerForm">
+                {% csrf_token %}
+
+                <div class="row row-cols-2">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="firstName"><i class="fas fa-user"></i> First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="first_name" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="lastName"><i class="fas fa-user"></i> Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="last_name" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user-circle"></i> Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Choose a unique username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+
+                <div class="row row-cols-2">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="password"><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="confirmPassword"><i class="fas fa-lock"></i> Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="+1234567890" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Blood Type <i class="fas fa-droplet"></i></label>
+                    <div class="blood-types">
+                        <input type="radio" id="O_pos" name="blood_type" value="O+" class="blood-option" required>
+                        <label for="O_pos">O+</label>
+
+                        <input type="radio" id="O_neg" name="blood_type" value="O-" class="blood-option">
+                        <label for="O_neg">O-</label>
+
+                        <input type="radio" id="A_pos" name="blood_type" value="A+" class="blood-option">
+                        <label for="A_pos">A+</label>
+
+                        <input type="radio" id="A_neg" name="blood_type" value="A-" class="blood-option">
+                        <label for="A_neg">A-</label>
+
+                        <input type="radio" id="B_pos" name="blood_type" value="B+" class="blood-option">
+                        <label for="B_pos">B+</label>
+
+                        <input type="radio" id="B_neg" name="blood_type" value="B-" class="blood-option">
+                        <label for="B_neg">B-</label>
+
+                        <input type="radio" id="AB_pos" name="blood_type" value="AB+" class="blood-option">
+                        <label for="AB_pos">AB+</label>
+
+                        <input type="radio" id="AB_neg" name="blood_type" value="AB-" class="blood-option">
+                        <label for="AB_neg">AB-</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="role"><i class="fas fa-id-badge"></i> Register As</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="donor">Donor</option>
+                        <option value="recipient">Recipient</option>
+                        <option value="both">Both Donor & Recipient</option>
+                    </select>
+                    <div class="role-info" id="roleInfo"></div>
+                </div>
+
+                <button type="submit" class="btn-register" id="registerBtn">
+                    <span>Create Account</span>
+                    <span class="spinner" id="spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <div class="login-link">
+                <p>Go back to</p>
+                <a href="/login/">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const messageDiv = document.getElementById('message');
+        const spinner = document.getElementById('spinner');
+        const registerBtn = document.getElementById('registerBtn');
+        const roleSelect = document.getElementById('role');
+        const roleInfo = document.getElementById('roleInfo');
+
+        const roleDescriptions = {
+            'donor': 'Help save lives by donating blood regularly',
+            'recipient': 'Request blood when you need it',
+            'both': 'Both donate and request blood'
+        };
+
+        roleSelect.addEventListener('change', function() {
+            if (this.value) {
+                roleInfo.textContent = roleDescriptions[this.value] || '';
+            } else {
+                roleInfo.textContent = '';
+            }
+        });
+
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'danger');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'danger');
+                return;
+            }
+
+            registerBtn.disabled = true;
+            spinner.style.display = 'inline';
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value,
+                blood_type: document.querySelector('input[name="blood_type"]:checked').value,
+                role: document.getElementById('role').value,
+            };
+
+            try {
+                const response = await fetch('/api/auth/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Save token to localStorage
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    showMessage('Account created successfully! Redirecting...', 'success');
+                    
+                    setTimeout(() => {
+                        const role = (data.user.role || '').toString().trim().toLowerCase().replace(/[-\s]/g, '_');
+                        const adminRoles = ['admin', 'super_admin', 'superadmin', 'super_admin'];
+                        if (adminRoles.includes(role)) {
+                            window.location.href = '/admin-dashboard/';
+                        } else {
+                            window.location.href = '/dashboard/';
+                        }
+                    }, 1500);
+                } else {
+                    if (typeof data === 'object') {
+                        const errors = Object.values(data).flat().join(', ');
+                        showMessage(errors || 'Registration failed', 'danger');
+                    } else {
+                        showMessage(data.error || 'Registration failed', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage('An error occurred. Please try again.', 'danger');
+            } finally {
+                registerBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+
+        function showMessage(message, type) {
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
